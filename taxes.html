@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tax Distribution Calculator</title>
+
+<style>
+
+
+  /* Styles for the text block that appears on click */
+  .text-block {
+    display: none; /* Hide the text block initially */
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: white; /* White background */
+    color: black; /* Black text color */
+    padding: 10px;
+    box-sizing: border-box;
+    overflow: auto; /* In case the text is too long */
+    transition: opacity 0.3s ease; /* Smooth transition for the text block */
+  }
+
+  /* Class to toggle visibility */
+  .show-text {
+    display: flex; /* Show the text block */
+    justify-content: center; /* Center the text block content */
+    align-items: center; /* Center the text block content */
+    text-align: center; /* Center text */
+  }
+
+
+  /* This styles the calculate button */
+  #taxForm button[type="submit"] {
+    background-color: orange; /* Sets the background color to orange */
+    color: black; /* Sets the text color to white for contrast */
+    border: none; /* Removes the border */
+    cursor: pointer; /* Changes the cursor to a pointer when hovering over the button */
+  }
+
+  .results-text {
+    font-size: 30px; /* Set the font size to 20 pixels */
+    color: white; /* Set the text color to white */
+    margin-bottom: 20px; /* Add space below the text */
+    /* Add any other desired styles */
+  }
+
+  #results, #stateResults {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px; /* Adjusts the gap between tiles */
+    justify-content: flex-start; /* Aligns tiles to the start of the container */
+    align-items: stretch; /* Stretches the tiles to fill the container height */
+  }
+
+  
+
+  .result-tile-ca {
+    flex: 1 0 calc(20% - 10px); /* Adjusts to 5 tiles per row with the gap */
+    max-width: calc(20% - 10px); /* Adjusts to 5 tiles per row with the gap */
+    background-color: #97ebc5; /* Sets the tile background to white */
+    position: relative; /* Needed for absolute positioning of children */
+    box-sizing: border-box; /* Includes padding and border in the element's total width and height */
+    /* Set a minimum height if needed, or remove if you want height to be automatic */
+    height: 200px; /* Optional: you can adjust this value as needed */
+  }
+
+  .result-tile img {
+    width: 100%; /* Set image width to be 50% of its container */
+    height: auto; /* Maintain the aspect ratio */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    object-fit: contain;
+  }
+
+
+
+  .info-container {
+    position: absolute; /* This positions the container over the image */
+    bottom: 0; /* Aligns the container to the bottom of the tile */
+    left: 0; /* Aligns the container to the left of the tile */
+    width: 100%; /* Ensures the container spans the width of the tile */
+    background-color: transparent; /* Makes the background transparent */
+    color: black; /* Change text color to black */
+    padding: 5px; /* Padding inside the container */
+    box-sizing: border-box; /* Includes padding in the width and height */
+    display: flex; /* Positions amount and name side by side */
+    justify-content: space-between; /* Distributes space between amount and name */
+    align-items: center; /* Vertically centers the text */
+    padding: 10px; /* Adjust the padding as needed */
+  }
+
+
+  .amount, .name {
+      margin: 0; /* Remove any default margins */
+      /* Add any additional text styling you want here */
+  }
+
+
+
+  #main-title {
+    color: #97ebc5; /* Sets the color to white */
+    /* Add any other styling you want for your title here */
+  }
+
+  #taxForm {
+    margin-bottom: 30px; /* Adjust the value as needed to create more or less space */
+  }
+
+  .amount {
+    font-size: 30px; /* Larger font size for the amount */
+    font-weight: bold; /* Optional: makes the font bold */
+  }
+
+  .name {
+    font-size: 18px; /* Smaller font size for the name */
+  }
+
+  .caption {
+    font-size: 20px; /* This sets the font size to 16 pixels */
+    /* Add any other styles you want for the caption here */
+  }
+
+  body {
+    font-family: Helvetica, sans-serif;
+    margin: 0;
+    background-color: black; /* Sets the background color to black */
+    padding: 20px; /* Adds padding around the content */
+  }
+  
+  .container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    color: white;
+    padding: 20px;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+
+  .form-row {
+    display: flex; /* Enables flexbox layout */
+    flex-direction: row; /* Stacks children horizontally */
+    align-items: flex-end; /* Aligns children to the end (bottom) */
+    justify-content: flex-start; /* Aligns form elements to the start (left) */
+    flex-wrap: wrap; /* Allows form elements to wrap onto the next line if needed */
+    gap: 10px; /* Optional: adds space between items */
+    width: 100%; /* Ensure the form row takes up the full width of its container */
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end; /* Aligns the button to the bottom */
+    height: 100%; /* Ensures the form-group fills the height */
+  }
+
+  /* If you want only the button to be aligned to the bottom, use this instead */
+  .form-group button {
+      margin-top: auto; /* Pushes the button to the bottom */
+  }
+
+  /* If you have a separate style for your <h1>, you might want to adjust it */
+  h1 {
+    align-self: flex-start; /* Aligns the title to the left */
+    margin-bottom: 0; /* Removes bottom margin to align with form fields */
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .form-group label {
+    margin-bottom: 5px; /* Spacing between label and input/select */
+  }
+
+  /* Apply the same styles to both text and number input types, as well as select and button elements */
+  .form-group input[type="text"],
+  .form-group input[type="number"],
+  .form-group select,
+  .form-group button {
+    height: 40px; /* Sets a fixed height for all input/select/button elements */
+    padding: 0 10px; /* Adjust padding as needed, while keeping the height consistent */
+    box-sizing: border-box; /* Includes padding and border in the element's total height */
+  }
+
+  /* You can adjust the button padding if needed */
+  .form-group button {
+    padding: 0 20px; /* Button padding can be adjusted independently from height */
+  }
+
+  #results div {
+    margin-bottom: 5px; /* Spacing below each result */
+  }
+
+  
+  #results {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px; /* Adjust the gap between tiles as needed */
+  }
+
+  /* Base styles for .result-tile that apply to all screen sizes */
+  .result-tile {
+    width: 400px; /* Set the width of the tiles */
+    height: 250px; /* Set the height of the tiles */
+    border: 0px solid #ddd; /* Add a border to the tiles */
+    text-align: center; /* Center the text */
+    display: flex;
+    color: #97ebc5; /* Text color */
+    flex-direction: column;
+    justify-content: space-between; /* Distributes space evenly */
+    padding: 10px;
+    box-sizing: border-box;
+    background-color: #d2a36c; /* Sets the tile background color */
+    margin: 5px; /* Margin around tiles */
+    position: relative; /* Needed for absolute positioning of children */
+  }
+
+  /* Media query for small screens */
+  @media (max-width: 767px) { /* Adjust this breakpoint as needed */
+    #results {
+      justify-content: center; /* Center tiles when they stack */
+    }
+    .result-tile {
+      flex-basis: 100%; /* Each tile takes full width on small screens */
+      max-width: 100%; /* Ensures the tile does not exceed the screen width */
+      margin: 5px 0; /* Adjust margin for vertical stacking */
+    }
+  }
+
+
+
+  .result-tile img {
+  width: 60%; /* Set image width to 70% of its container */
+  height: 60%; /* Set image height to 70% of its container */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  object-fit: contain; /* This will ensure that the image is scaled properly */
+}
+
+
+  </style>
+  
+  
+  
+  
+  
+  
+
+
+</head>
+<body>
+
+  <div class="container">
+    <form id="taxForm">
+      <div class="form-row">
+        <h1>Where do my taxes go?</h1>
+        <div class="form-group">
+          <label for="income">Gross Annual Income:</label>
+          <input type="text" id="income" required pattern="\d{1,3}(,\d{3})*(\.\d+)?(?!.*\d)" title="Income should be a number. Example: 12,345">
+        </div>            
+        <div class="form-group">
+          <label for="filingStatus">Filing Status:</label>
+          <select id="filingStatus" required>
+            <option value="single">Single</option>
+            <option value="married">Married Filing Jointly</option>
+          </select>
+        </div>
+
+        <!-- New form-group for State Selection -->
+        <div class="form-group">
+          <label for="stateSelection">State:</label>
+          <select id="stateSelection" required>
+            <option value="CA">CA</option>
+            <option value="NY">NY</option>
+          </select>
+        </div>
+
+
+
+        <div class="form-group">
+          <button type="submit">Calculate</button>
+        </div>
+      </div>
+
+    </form>
+    <div id="results-text" style="display: none;"></div>
+    <h2 id="federalResultsText" style="display: none;">Federal Taxes</h2>
+    <div id="results">
+      <!-- Results will be displayed here -->
+    </div>
+
+   <!-- New section for additional results -->
+    <h2 id="stateResultsText" style="display: none;">California State Taxes</h2>
+    <div id="stateResults">
+      <!-- Additional results will be displayed here -->
+    </div>
+
+
+</div>
+
+      
+
+
+
+<script>
+  
+
+
+  function calculateTaxes(income, brackets) {
+    let tax = 0;
+    let lastLimit = 0;
+
+    for (const bracket of brackets) {
+      if (income > bracket.limit) {
+        tax += (bracket.limit - lastLimit) * bracket.rate;
+        lastLimit = bracket.limit;
+      } else {
+        tax += (income - lastLimit) * bracket.rate;
+        break;
+      }
+    }
+    console.log(`Income: ${income}, Calculated Tax: ${tax}`); // Add this line for debugging
+
+    return tax;
+  }
+
+
+
+  document.getElementById('income').addEventListener('input', function (e) {
+    // Remove any characters that are not numbers or commas
+    let value = e.target.value.replace(/[^\d,]/g, '');
+    // Remove all commas to avoid conflicts in the next formatting
+    value = value.replace(/,/g, '');
+    // Convert the cleaned value to a number
+    const number = parseInt(value, 10);
+    // Format the number with commas and update the input value
+    e.target.value = isNaN(number) ? '' : number.toLocaleString();
+  });
+
+
+  async function fetchAndParseCSV(fileName) {
+    const response = await fetch(fileName);
+    const csvText = await response.text();
+    const lines = csvText.trim().split('\n');
+    const data = lines.slice(1).map(line => {
+      const fields = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+      if (fields.length === 4) {
+        return {
+          name: fields[0].replace(/^"|"$/g, ''),
+          percent: parseFloat(fields[1]),
+          image: fields[2],
+          description: fields[3].replace(/^"|"$/g, '')
+        };
+      } else {
+        console.error('Incorrect number of fields:', line);
+        return null;
+      }
+    });
+    return data.filter(entry => entry);
+  }
+
+    
+
+  function displayResults(budgetData, totalTax) {
+
+    // Define start and end colors of the gradient in RGB format
+    const startColor = { r: 255, g: 222, b: 26 }; // Light red
+    const endColor = { r: 255, g: 116, b: 0 };   // Dark red
+
+    // Calculate the step change for each color component based on the number of items
+    const colorStep = {
+      r: (endColor.r - startColor.r) / (budgetData.length - 1),
+      g: (endColor.g - startColor.g) / (budgetData.length - 1),
+      b: (endColor.b - startColor.b) / (budgetData.length - 1)
+    };
+
+    // Assume resultsDiv is the container where you want to add the tiles
+    
+    const resultsDiv = document.getElementById('results');
+    resultsDiv.innerHTML = ''; // Clear previous results
+
+    const federalResultsText = document.getElementById('federalResultsText');
+    federalResultsText.innerHTML = 'Federal Taxes';
+    federalResultsText.style.display = 'block';
+
+    console.log('Parsed budget data:', budgetData);
+
+
+    console.log('Parsed budget data:', budgetData);
+    budgetData.forEach((budgetItem, index) => {
+      console.log(`Processing item ${index}:`, budgetItem);
+      const amount = totalTax * (budgetItem.percent / 100);
+      console.log(`Calculated amount for item ${index}:`, amount);
+      const formattedAmount = amount.toLocaleString('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        maximumFractionDigits: 0,
+      });
+
+      // Calculate the color for the current tile
+      const tileColor = {
+        r: Math.round(startColor.r + colorStep.r * index),
+        g: Math.round(startColor.g + colorStep.g * index),
+        b: Math.round(startColor.b + colorStep.b * index),
+      };
+
+      // Create and append the tile
+      const tile = document.createElement('div');
+      tile.classList.add('result-tile');
+      tile.style.backgroundColor = `rgb(${tileColor.r}, ${tileColor.g}, ${tileColor.b})`;
+      tile.style.color = '#000'; // Set text color to black
+
+
+      // Create and append the image if it exists
+      let image;
+      if (budgetItem.image) {
+        image = document.createElement('img');
+        image.src = budgetItem.image;
+        image.alt = budgetItem.name;
+        image.style.maxWidth = '100%'; // Ensure the image fits in the tile
+        image.style.marginBottom = '10px';
+        tile.appendChild(image);
+      }
+
+      // Create and append the amount div
+      const amountDiv = document.createElement('div');
+      amountDiv.classList.add('amount');
+      amountDiv.textContent = formattedAmount;
+      tile.appendChild(amountDiv);
+
+      // Create and append the name div
+      const nameDiv = document.createElement('div');
+      nameDiv.classList.add('name');
+      nameDiv.textContent = budgetItem.name;
+      tile.appendChild(nameDiv);
+
+      // Create and append the description paragraph
+      const descriptionParagraph = document.createElement('p');
+      descriptionParagraph.classList.add('description');
+      descriptionParagraph.textContent = budgetItem.description;
+      descriptionParagraph.style.display = 'none'; // Initially hide the description
+      tile.appendChild(descriptionParagraph);
+
+      // Add click event listener to toggle description visibility
+      tile.addEventListener('click', function() {
+        const isDescriptionVisible = descriptionParagraph.style.display !== 'none';
+        descriptionParagraph.style.display = isDescriptionVisible ? 'none' : 'block';
+        if (image) {
+          image.style.display = isDescriptionVisible ? 'block' : 'none';
+        }
+      });
+
+      // Append the tile to the results container
+      resultsDiv.appendChild(tile);
+    });
+  }
+
+  async function loadTaxBrackets(fileName, filingStatus) {
+    const response = await fetch(fileName);
+    const csvText = await response.text();
+    const lines = csvText.trim().split('\n');
+    const brackets = lines.slice(1).map(line => {
+      const fields = line.split(',');
+      // Ensure that you're parsing the correct indices for filingStatus, limit, and rate
+      return {
+        filingStatus: fields[0].trim(),
+        limit: fields[1].trim().toLowerCase() === 'infinity' ? Infinity : parseFloat(fields[1]),
+        rate: parseFloat(fields[2]) // This should be index 2 based on the CSV format you've given
+      };
+    }).filter(bracket => bracket.filingStatus.toLowerCase() === filingStatus.toLowerCase());
+    console.log(`Brackets loaded from ${fileName} for ${filingStatus}:`, brackets);
+    return brackets;
+  }
+
+
+
+
+
+  function displaystateResults(stateBudgetData, totalTax) {
+
+    // Define start and end colors of the gradient in RGB format
+    const startColor = { r: 11, g: 205, b: 255 };   // Dark red
+    const endColor = { r: 207, g: 245, b: 255 }; // Light red
+
+    // Calculate the step change for each color component based on the number of items
+    const colorStep = {
+      r: (endColor.r - startColor.r) / (stateBudgetData.length - 1),
+      g: (endColor.g - startColor.g) / (stateBudgetData.length - 1),
+      b: (endColor.b - startColor.b) / (stateBudgetData.length - 1)
+    };
+
+    // Assume resultsDiv is the container where you want to add the tiles
+
+    const stateResultsDiv = document.getElementById('stateResults');
+    stateResultsDiv.innerHTML = ''; // Clear previous results
+
+    const stateResultsText = document.getElementById('stateResultsText');
+    stateResultsText.innerHTML = 'State Taxes';
+    stateResultsText.style.display = 'block';
+
+    console.log('Parsed budget data:', stateBudgetData);
+
+
+    console.log('Parsed budget data:', stateBudgetData);
+    stateBudgetData.forEach((budgetItem, index) => {
+      console.log(`Processing item ${index}:`, budgetItem);
+      const amount = totalTax * (budgetItem.percent / 100);
+      console.log(`Calculated amount for item ${index}:`, amount);
+      const formattedAmount = amount.toLocaleString('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        maximumFractionDigits: 0,
+      });
+
+      // Calculate the color for the current tile
+      const tileColor = {
+        r: Math.round(startColor.r + colorStep.r * index),
+        g: Math.round(startColor.g + colorStep.g * index),
+        b: Math.round(startColor.b + colorStep.b * index),
+      };
+
+      // Create and append the tile
+      const tile = document.createElement('div');
+      tile.classList.add('result-tile');
+      tile.style.backgroundColor = `rgb(${tileColor.r}, ${tileColor.g}, ${tileColor.b})`;
+      tile.style.color = '#000'; // Set text color to black
+
+
+      // Create and append the image if it exists
+      let image;
+      if (budgetItem.image) {
+        image = document.createElement('img');
+        image.src = budgetItem.image;
+        image.alt = budgetItem.name;
+        image.style.maxWidth = '100%'; // Ensure the image fits in the tile
+        image.style.marginBottom = '10px';
+        tile.appendChild(image);
+      }
+
+      // Create and append the amount div
+      const amountDiv = document.createElement('div');
+      amountDiv.classList.add('amount');
+      amountDiv.textContent = formattedAmount;
+      tile.appendChild(amountDiv);
+
+      // Create and append the name div
+      const nameDiv = document.createElement('div');
+      nameDiv.classList.add('name');
+      nameDiv.textContent = budgetItem.name;
+      tile.appendChild(nameDiv);
+
+      // Create and append the description paragraph
+      const descriptionParagraph = document.createElement('p');
+      descriptionParagraph.classList.add('description');
+      descriptionParagraph.textContent = budgetItem.description;
+      descriptionParagraph.style.display = 'none'; // Initially hide the description
+      tile.appendChild(descriptionParagraph);
+
+      // Add click event listener to toggle description visibility
+      tile.addEventListener('click', function() {
+        const isDescriptionVisible = descriptionParagraph.style.display !== 'none';
+        descriptionParagraph.style.display = isDescriptionVisible ? 'none' : 'block';
+        if (image) {
+          image.style.display = isDescriptionVisible ? 'block' : 'none';
+        }
+      });
+
+      // Append the tile to the results container
+      stateResultsDiv.appendChild(tile);
+    });
+    }
+
+
+
+  
+
+
+
+    document.getElementById('taxForm').addEventListener('submit', function (event) {
+      event.preventDefault(); // Prevent the default form submission
+
+      // Get the income and filing status from the form
+      const income = Number(document.getElementById('income').value.replace(/,/g, ''));
+      const filingStatus = document.getElementById('filingStatus').value; // Get the selected filing status
+      const selectedState = document.getElementById('stateSelection').value; // Get the selected state
+
+      // Construct file names for tax brackets and budget based on the selected state
+      const stateTaxBracketsFile = selectedState + 'TaxBrackets.csv';
+      const stateBudgetFile = selectedState + 'Budget.csv';
+
+      // Load the tax brackets and budget data with the filing status
+      Promise.all([
+        loadTaxBrackets('federalTaxBrackets.csv', filingStatus),
+        loadTaxBrackets(stateTaxBracketsFile, filingStatus),
+        fetchAndParseCSV('federalBudget.csv'), // This assumes you always load federal budget data
+        fetchAndParseCSV(stateBudgetFile)
+      ]).then(([federalBrackets, stateBrackets, federalBudgetData, stateBudgetData]) => {
+        // Ensure that the brackets and budget data are arrays before attempting to iterate over them
+        if (!Array.isArray(federalBrackets) || !Array.isArray(stateBrackets) || !Array.isArray(federalBudgetData) || !Array.isArray(stateBudgetData)) {
+          throw new Error('One or more of the required data sets are not arrays.');
+        }
+
+        // Calculate the taxes
+        const totalFederalTax = calculateTaxes(income, federalBrackets);
+        const totalStateTax = calculateTaxes(income, stateBrackets);
+
+        // Display the results using the budget data
+        displayResults(federalBudgetData, totalFederalTax);
+        displaystateResults(stateBudgetData, totalStateTax);
+      }).catch(error => {
+        console.error('Error loading or parsing the CSV files:', error);
+      });
+    });
+
+
+
+
+
+</script>
+</body>
+</html>

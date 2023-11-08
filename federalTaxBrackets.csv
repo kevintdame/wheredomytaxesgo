@@ -1,0 +1,15 @@
+FilingStatus,Limit,Rate
+Single,9950,0.10
+Single,40525,0.12
+Single,86375,0.22
+Single,164925,0.24
+Single,209425,0.32
+Single,523600,0.35
+Single,Infinity,0.37
+Married,19900,0.10
+Married,81050,0.12
+Married,172750,0.22
+Married,329850,0.24
+Married,418850,0.32
+Married,628300,0.35
+Married,Infinity,0.37
